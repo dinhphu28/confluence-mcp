@@ -13,6 +13,8 @@ import (
 	"github.com/mark3labs/mcp-go/server"
 )
 
+var version = "dev"
+
 var cfg *Config
 
 func confluenceGET(path string) (string, error) {
@@ -40,6 +42,21 @@ func confluenceGET(path string) (string, error) {
 }
 
 func main() {
+	if len(os.Args) > 1 {
+		switch os.Args[1] {
+		case "setup":
+			if err := RunSetup(); err != nil {
+				fmt.Fprintf(os.Stderr, "setup error: %v\n", err)
+				os.Exit(1)
+			}
+			return
+
+		case "--version":
+			fmt.Println(version)
+			return
+		}
+	}
+
 	var err error
 
 	cfg, err = LoadConfig()
