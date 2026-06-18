@@ -6,10 +6,29 @@ import (
 	"io"
 	"os"
 	"path/filepath"
+	"runtime"
 	"strings"
 
 	"gopkg.in/yaml.v3"
 )
+
+// binaryName returns the platform-appropriate executable name. On Windows the
+// binary must carry the .exe extension to be runnable.
+func binaryName() string {
+	if runtime.GOOS == "windows" {
+		return "confluence-mcp.exe"
+	}
+	return "confluence-mcp"
+}
+
+// installPath returns the full path the binary is installed to.
+func installPath() (string, error) {
+	homeDir, err := os.UserHomeDir()
+	if err != nil {
+		return "", err
+	}
+	return filepath.Join(homeDir, ".local", "bin", binaryName()), nil
+}
 
 func RunSetup() error {
 	if err := installSelf(); err != nil {
@@ -65,9 +84,13 @@ func RunSetup() error {
 		return err
 	}
 
+	binPath, err := installPath()
+	if err != nil {
+		return err
+	}
+
 	fmt.Println()
-	fmt.Printf("Installed binary: %s\n",
-		filepath.Join(homeDir, ".local", "bin", "confluence-mcp"))
+	fmt.Printf("Installed binary: %s\n", binPath)
 	fmt.Printf("Config written: %s\n", configPath)
 
 	fmt.Println()
@@ -76,8 +99,7 @@ func RunSetup() error {
 
 	fmt.Println(`"confluence": {`)
 	fmt.Println(`  "type": "local",`)
-	fmt.Printf(`  "command": ["%s"]`+"\n",
-		filepath.Join(homeDir, ".local", "bin", "confluence-mcp"))
+	fmt.Printf(`  "command": [%q]`+"\n", binPath)
 	fmt.Println(`}`)
 
 	return nil
@@ -89,18 +111,14 @@ func installSelf() error {
 		return err
 	}
 
-	homeDir, err := os.UserHomeDir()
+	targetPath, err := installPath()
 	if err != nil {
 		return err
 	}
 
-	targetDir := filepath.Join(homeDir, ".local", "bin")
-
-	if err := os.MkdirAll(targetDir, 0o755); err != nil {
+	if err := os.MkdirAll(filepath.Dir(targetPath), 0o755); err != nil {
 		return err
 	}
-
-	targetPath := filepath.Join(targetDir, "confluence-mcp")
 
 	src, err := os.Open(exePath)
 	if err != nil {
