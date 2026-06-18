@@ -13,18 +13,15 @@ import (
 	"github.com/mark3labs/mcp-go/server"
 )
 
-var (
-	baseURL = os.Getenv("CONFLUENCE_URL")
-	token   = os.Getenv("CONFLUENCE_PAT")
-)
+var cfg *Config
 
 func confluenceGET(path string) (string, error) {
-	req, err := http.NewRequest("GET", baseURL+path, nil)
+	req, err := http.NewRequest("GET", cfg.Confluence.URL+path, nil)
 	if err != nil {
 		return "", err
 	}
 
-	req.Header.Set("Authorization", "Bearer "+token)
+	req.Header.Set("Authorization", "Bearer "+cfg.Confluence.PAT)
 	req.Header.Set("Accept", "application/json")
 
 	resp, err := http.DefaultClient.Do(req)
@@ -43,8 +40,12 @@ func confluenceGET(path string) (string, error) {
 }
 
 func main() {
-	if baseURL == "" || token == "" {
-		panic("CONFLUENCE_URL and CONFLUENCE_PAT are required")
+	var err error
+
+	cfg, err = LoadConfig()
+	if err != nil {
+		fmt.Fprintf(os.Stderr, "config error: %v\n", err)
+		os.Exit(1)
 	}
 
 	s := server.NewMCPServer(
@@ -108,6 +109,7 @@ func main() {
 	})
 
 	if err := server.ServeStdio(s); err != nil {
-		panic(err)
+		fmt.Fprintf(os.Stderr, "mcp server error: %v\n", err)
+		os.Exit(1)
 	}
 }
