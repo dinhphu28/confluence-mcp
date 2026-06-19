@@ -3,8 +3,12 @@ package mcpserver
 
 import (
 	"context"
+	"encoding/base64"
 	"encoding/json"
 	"fmt"
+	"os"
+	"path/filepath"
+	"strings"
 
 	"github.com/mark3labs/mcp-go/mcp"
 	"github.com/mark3labs/mcp-go/server"
@@ -98,6 +102,50 @@ func registerReadTools(s *server.MCPServer, client *confluence.Client) {
 		}
 
 		return jsonResult(client.GetComments(pageID, request.GetInt("limit", 25)))
+	})
+
+	getAttachmentsTool := mcp.NewTool(
+		"confluence_get_attachments",
+		mcp.WithDescription("List the attachments (images, files) on a Confluence page"),
+		mcp.WithString("page_id", mcp.Required(), mcp.Description("Confluence page ID")),
+		mcp.WithNumber("limit", mcp.Description("Maximum number of attachments (default 25)")),
+	)
+
+	s.AddTool(getAttachmentsTool, func(ctx context.Context, request mcp.CallToolRequest) (*mcp.CallToolResult, error) {
+		pageID, err := request.RequireString("page_id")
+		if err != nil {
+			return mcp.NewToolResultError(err.Error()), nil
+		}
+
+		return jsonResult(client.GetAttachments(pageID, request.GetInt("limit", 25)))
+	})
+
+	downloadAttachmentTool := mcp.NewTool(
+		"confluence_download_attachment",
+		mcp.WithDescription("Download an attachment by its ID. Images are returned as viewable "+
+			"images; other files as base64. Get the ID from confluence_get_attachments."),
+		mcp.WithString("attachment_id", mcp.Required(), mcp.Description("Attachment content ID (e.g. att12345)")),
+	)
+
+	s.AddTool(downloadAttachmentTool, func(ctx context.Context, request mcp.CallToolRequest) (*mcp.CallToolResult, error) {
+		attachmentID, err := request.RequireString("attachment_id")
+		if err != nil {
+			return mcp.NewToolResultError(err.Error()), nil
+		}
+
+		att, err := client.DownloadAttachment(attachmentID)
+		if err != nil {
+			return mcp.NewToolResultError(err.Error()), nil
+		}
+
+		encoded := base64.StdEncoding.EncodeToString(att.Data)
+		caption := fmt.Sprintf("%s (%s, %d bytes)", att.Filename, att.MediaType, len(att.Data))
+
+		if strings.HasPrefix(att.MediaType, "image/") {
+			return mcp.NewToolResultImage(caption, encoded, att.MediaType), nil
+		}
+
+		return mcp.NewToolResultText(caption + "\nbase64:\n" + encoded), nil
 	})
 }
 
@@ -200,6 +248,31 @@ func registerWriteTools(s *server.MCPServer, client *confluence.Client) {
 		}
 
 		return mcp.NewToolResultText(fmt.Sprintf("Deleted page %s", pageID)), nil
+	})
+
+	uploadAttachmentTool := mcp.NewTool(
+		"confluence_upload_attachment",
+		mcp.WithDescription("Upload a local file as an attachment on a Confluence page"),
+		mcp.WithString("page_id", mcp.Required(), mcp.Description("Page ID to attach the file to")),
+		mcp.WithString("file_path", mcp.Required(), mcp.Description("Absolute path to the local file to upload")),
+	)
+
+	s.AddTool(uploadAttachmentTool, func(ctx context.Context, request mcp.CallToolRequest) (*mcp.CallToolResult, error) {
+		pageID, err := request.RequireString("page_id")
+		if err != nil {
+			return mcp.NewToolResultError(err.Error()), nil
+		}
+		filePath, err := request.RequireString("file_path")
+		if err != nil {
+			return mcp.NewToolResultError(err.Error()), nil
+		}
+
+		data, err := os.ReadFile(filePath)
+		if err != nil {
+			return mcp.NewToolResultError(err.Error()), nil
+		}
+
+		return jsonResult(client.UploadAttachment(pageID, filepath.Base(filePath), data))
 	})
 }
 
