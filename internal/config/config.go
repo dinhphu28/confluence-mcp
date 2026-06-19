@@ -1,4 +1,5 @@
-package main
+// Package config loads the confluence-mcp configuration file.
+package config
 
 import (
 	"fmt"
@@ -13,17 +14,26 @@ type Config struct {
 }
 
 type ConfluenceConfig struct {
-	URL string `yaml:"url"`
-	PAT string `yaml:"pat"`
+	URL      string `yaml:"url"`
+	PAT      string `yaml:"pat"`
+	ReadOnly bool   `yaml:"read_only"`
 }
 
-func LoadConfig() (*Config, error) {
+// Path returns the location of the config file (~/.config/confluence-mcp/config.yaml).
+func Path() (string, error) {
 	homeDir, err := os.UserHomeDir()
+	if err != nil {
+		return "", err
+	}
+	return filepath.Join(homeDir, ".config", "confluence-mcp", "config.yaml"), nil
+}
+
+// Load reads and validates the config file.
+func Load() (*Config, error) {
+	configPath, err := Path()
 	if err != nil {
 		return nil, err
 	}
-
-	configPath := filepath.Join(homeDir, ".config", "confluence-mcp", "config.yaml")
 
 	data, err := os.ReadFile(configPath)
 	if err != nil {

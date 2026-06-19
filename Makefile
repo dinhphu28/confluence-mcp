@@ -30,7 +30,7 @@ build:
 	GOARCH=$(ARCH) \
 	go build \
 	-ldflags="-s -w -X main.version=$(VERSION)" \
-	-o $(BUILD_DIR)/$(OS)_$(ARCH)/$(BIN_NAME) .
+	-o $(BUILD_DIR)/$(OS)_$(ARCH)/$(BIN_NAME) ./cmd/$(APP_NAME)
 
 package: build
 	rm -rf $(PACKAGE_DIR)
