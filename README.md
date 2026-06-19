@@ -43,7 +43,7 @@ written to `~/.config/confluence-mcp/config.yaml`.
 
 ### Windows
 
-Extract the zip and run setup from PowerShell or Command Prompt:
+Extract the zip, then open **PowerShell as Administrator** and run setup:
 
 ```powershell
 Expand-Archive confluence-mcp_0.1.0_windows_amd64.zip
