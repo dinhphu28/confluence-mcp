@@ -20,6 +20,13 @@ PACKAGE_NAME := $(APP_NAME)_$(VERSION)_$(OS)_$(ARCH)
 PACKAGE_DIR := $(DIST_DIR)/$(PACKAGE_NAME)
 ARCHIVE := $(DIST_DIR)/$(PACKAGE_NAME).$(ARCHIVE_EXT)
 
+# Platform-specific install hint shipped as README.txt inside the package.
+ifeq ($(OS),windows)
+README_TXT := Confluence MCP (Windows)\n\nOpen PowerShell as Administrator, then run:\n\n  .\\$(BIN_NAME) setup\n
+else
+README_TXT := Confluence MCP\n\nRun setup:\n\n  ./$(BIN_NAME) setup\n
+endif
+
 .PHONY: build package release release-linux release-windows release-all clean
 
 build:
@@ -39,11 +46,7 @@ package: build
 
 	cp $(BUILD_DIR)/$(OS)_$(ARCH)/$(BIN_NAME) $(PACKAGE_DIR)/
 
-	printf '%s\n' \
-	'Run setup:' \
-	'' \
-	'  $(BIN_NAME) setup' \
-	> $(PACKAGE_DIR)/README.txt
+	printf '%b' '$(README_TXT)' > $(PACKAGE_DIR)/README.txt
 
 ifeq ($(ARCHIVE_EXT),zip)
 	cd $(DIST_DIR) && zip -qr $(PACKAGE_NAME).zip $(PACKAGE_NAME)
