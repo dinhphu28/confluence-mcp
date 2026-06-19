@@ -54,6 +54,50 @@ cd confluence-mcp_0.1.0_windows_amd64
 The binary is installed to `%USERPROFILE%\.local\bin\confluence-mcp.exe` and
 the config is written to `%USERPROFILE%\.config\confluence-mcp\config.yaml`.
 
+## Upgrading
+
+To upgrade, extract the new release and run `setup` again:
+
+```sh
+./confluence-mcp setup
+```
+
+`setup` is safe to re-run. When a config already exists it **reuses your URL and
+token** — it does not re-ask — and only:
+
+- reinstalls the binary, and
+- migrates the config to the current schema if needed.
+
+You'll see one of `Reused existing config`, `Migrated existing config to
+version N`, or (first run) `Created new config`.
+
+To deliberately change the URL or token, force the prompts:
+
+```sh
+./confluence-mcp setup --reconfigure
+```
+
+At the prompts, pressing Enter keeps the current value (the existing token is
+preserved on a blank line).
+
+### Config versioning
+
+The config file carries a `config_version` field so upgrades can migrate it
+automatically instead of asking you to reconfigure:
+
+```yaml
+config_version: 1
+confluence:
+  url: https://your-confluence-server.com
+  pat: <your-token>
+```
+
+- Configs written by older releases (without `config_version`) are migrated on
+  the next `setup`.
+- The server refuses to start against a config whose `config_version` is *newer*
+  than the binary supports, telling you to upgrade — so a downgrade can't
+  silently misread a newer file.
+
 ## opencode config
 
 `setup` prints the exact snippet to add, using the installed path. For example:
