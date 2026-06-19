@@ -18,7 +18,8 @@ func main() {
 	if len(os.Args) > 1 {
 		switch os.Args[1] {
 		case "setup":
-			if err := setup.Run(); err != nil {
+			reconfigure := len(os.Args) > 2 && os.Args[2] == "--reconfigure"
+			if err := setup.Run(reconfigure); err != nil {
 				fmt.Fprintf(os.Stderr, "setup error: %v\n", err)
 				os.Exit(1)
 			}
