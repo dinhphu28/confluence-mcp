@@ -1,4 +1,6 @@
-package main
+// Package setup implements the interactive `setup` command: it installs the
+// binary and writes the config file.
+package setup
 
 import (
 	"bufio"
@@ -10,6 +12,8 @@ import (
 	"strings"
 
 	"gopkg.in/yaml.v3"
+
+	"dinhphu28/confluence-mcp/internal/config"
 )
 
 // binaryName returns the platform-appropriate executable name. On Windows the
@@ -30,7 +34,8 @@ func installPath() (string, error) {
 	return filepath.Join(homeDir, ".local", "bin", binaryName()), nil
 }
 
-func RunSetup() error {
+// Run installs the binary, prompts for connection details and writes the config.
+func Run() error {
 	if err := installSelf(); err != nil {
 		return fmt.Errorf("install binary: %w", err)
 	}
@@ -56,22 +61,19 @@ func RunSetup() error {
 		return fmt.Errorf("personal access token is required")
 	}
 
-	cfg := Config{
-		Confluence: ConfluenceConfig{
+	cfg := config.Config{
+		Confluence: config.ConfluenceConfig{
 			URL: confluenceURL,
 			PAT: pat,
 		},
 	}
 
-	homeDir, err := os.UserHomeDir()
+	configPath, err := config.Path()
 	if err != nil {
 		return err
 	}
 
-	configDir := filepath.Join(homeDir, ".config", "confluence-mcp")
-	configPath := filepath.Join(configDir, "config.yaml")
-
-	if err := os.MkdirAll(configDir, 0o700); err != nil {
+	if err := os.MkdirAll(filepath.Dir(configPath), 0o700); err != nil {
 		return err
 	}
 
