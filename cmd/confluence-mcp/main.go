@@ -38,7 +38,10 @@ func main() {
 	}
 
 	client := confluence.NewClient(cfg.Confluence.URL, cfg.Confluence.PAT)
-	s := mcpserver.New(client, version, cfg.Confluence.ReadOnly)
+
+	s := mcpserver.New(version)
+	mcpserver.RegisterConfluence(s, client, cfg.Confluence.ReadOnly)
+	// Future: if cfg.Jira.URL != "" { mcpserver.RegisterJira(s, jiraClient, cfg.Jira.ReadOnly) }
 
 	if err := server.ServeStdio(s); err != nil {
 		fmt.Fprintf(os.Stderr, "mcp server error: %v\n", err)
