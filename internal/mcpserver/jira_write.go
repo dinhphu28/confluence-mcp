@@ -2,6 +2,7 @@ package mcpserver
 
 import (
 	"context"
+	"fmt"
 
 	"github.com/mark3labs/mcp-go/mcp"
 	"github.com/mark3labs/mcp-go/server"
@@ -57,5 +58,56 @@ func registerJiraWriteTools(s *server.MCPServer, client *jira.Client) {
 		}
 
 		return jsonResult(client.AddComment(key, body))
+	})
+
+	updateIssueTool := mcp.NewTool(
+		"jira_update_issue",
+		mcp.WithDescription("Update a Jira issue's summary and/or description"),
+		mcp.WithString("issue_key", mcp.Required(), mcp.Description("Issue key (e.g. DEV-123) or numeric ID")),
+		mcp.WithString("summary", mcp.Description("New summary (unchanged if omitted)")),
+		mcp.WithString("description", mcp.Description("New description in Jira wiki markup (unchanged if omitted)")),
+	)
+
+	s.AddTool(updateIssueTool, func(ctx context.Context, request mcp.CallToolRequest) (*mcp.CallToolResult, error) {
+		key, err := request.RequireString("issue_key")
+		if err != nil {
+			return mcp.NewToolResultError(err.Error()), nil
+		}
+
+		summary := request.GetString("summary", "")
+		description := request.GetString("description", "")
+		if summary == "" && description == "" {
+			return mcp.NewToolResultError("provide 'summary' and/or 'description' to update"), nil
+		}
+
+		if err := client.UpdateIssue(key, summary, description); err != nil {
+			return mcp.NewToolResultError(err.Error()), nil
+		}
+
+		return mcp.NewToolResultText(fmt.Sprintf("Updated issue %s", key)), nil
+	})
+
+	transitionIssueTool := mcp.NewTool(
+		"jira_transition_issue",
+		mcp.WithDescription("Move a Jira issue through a status transition (get the id from jira_get_transitions)"),
+		mcp.WithString("issue_key", mcp.Required(), mcp.Description("Issue key (e.g. DEV-123) or numeric ID")),
+		mcp.WithString("transition_id", mcp.Required(), mcp.Description("Transition id from jira_get_transitions")),
+	)
+
+	s.AddTool(transitionIssueTool, func(ctx context.Context, request mcp.CallToolRequest) (*mcp.CallToolResult, error) {
+		key, err := request.RequireString("issue_key")
+		if err != nil {
+			return mcp.NewToolResultError(err.Error()), nil
+		}
+		transitionID, err := request.RequireString("transition_id")
+		if err != nil {
+			return mcp.NewToolResultError(err.Error()), nil
+		}
+
+		if err := client.TransitionIssue(key, transitionID); err != nil {
+			return mcp.NewToolResultError(err.Error()), nil
+		}
+
+		return mcp.NewToolResultText(fmt.Sprintf("Transitioned issue %s (transition %s)", key, transitionID)), nil
 	})
 }

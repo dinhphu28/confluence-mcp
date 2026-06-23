@@ -127,4 +127,35 @@ func registerConfluenceReadTools(s *server.MCPServer, client *confluence.Client)
 
 		return mcp.NewToolResultText(caption + "\nbase64:\n" + encoded), nil
 	})
+
+	getLabelsTool := mcp.NewTool(
+		"confluence_get_labels",
+		mcp.WithDescription("Get the labels on a Confluence page"),
+		mcp.WithString("page_id", mcp.Required(), mcp.Description("Confluence page ID")),
+	)
+
+	s.AddTool(getLabelsTool, func(ctx context.Context, request mcp.CallToolRequest) (*mcp.CallToolResult, error) {
+		pageID, err := request.RequireString("page_id")
+		if err != nil {
+			return mcp.NewToolResultError(err.Error()), nil
+		}
+
+		return jsonResult(client.GetLabels(pageID))
+	})
+
+	getPageHistoryTool := mcp.NewTool(
+		"confluence_get_page_history",
+		mcp.WithDescription("Get the version history of a Confluence page"),
+		mcp.WithString("page_id", mcp.Required(), mcp.Description("Confluence page ID")),
+		mcp.WithNumber("limit", mcp.Description("Maximum number of versions (default 25)")),
+	)
+
+	s.AddTool(getPageHistoryTool, func(ctx context.Context, request mcp.CallToolRequest) (*mcp.CallToolResult, error) {
+		pageID, err := request.RequireString("page_id")
+		if err != nil {
+			return mcp.NewToolResultError(err.Error()), nil
+		}
+
+		return jsonResult(client.GetPageHistory(pageID, request.GetInt("limit", 25)))
+	})
 }

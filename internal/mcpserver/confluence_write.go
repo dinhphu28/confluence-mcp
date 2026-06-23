@@ -137,4 +137,68 @@ func registerConfluenceWriteTools(s *server.MCPServer, client *confluence.Client
 
 		return jsonResult(client.UploadAttachment(pageID, filepath.Base(filePath), data))
 	})
+
+	addLabelTool := mcp.NewTool(
+		"confluence_add_label",
+		mcp.WithDescription("Add a label to a Confluence page"),
+		mcp.WithString("page_id", mcp.Required(), mcp.Description("Confluence page ID")),
+		mcp.WithString("name", mcp.Required(), mcp.Description("Label name")),
+	)
+
+	s.AddTool(addLabelTool, func(ctx context.Context, request mcp.CallToolRequest) (*mcp.CallToolResult, error) {
+		pageID, err := request.RequireString("page_id")
+		if err != nil {
+			return mcp.NewToolResultError(err.Error()), nil
+		}
+		name, err := request.RequireString("name")
+		if err != nil {
+			return mcp.NewToolResultError(err.Error()), nil
+		}
+
+		return jsonResult(client.AddLabel(pageID, name))
+	})
+
+	movePageTool := mcp.NewTool(
+		"confluence_move_page",
+		mcp.WithDescription("Move a Confluence page under a new parent (title and content preserved)"),
+		mcp.WithString("page_id", mcp.Required(), mcp.Description("ID of the page to move")),
+		mcp.WithString("target_parent_id", mcp.Required(), mcp.Description("ID of the new parent page")),
+	)
+
+	s.AddTool(movePageTool, func(ctx context.Context, request mcp.CallToolRequest) (*mcp.CallToolResult, error) {
+		pageID, err := request.RequireString("page_id")
+		if err != nil {
+			return mcp.NewToolResultError(err.Error()), nil
+		}
+		targetParentID, err := request.RequireString("target_parent_id")
+		if err != nil {
+			return mcp.NewToolResultError(err.Error()), nil
+		}
+
+		return jsonResult(client.MovePage(pageID, targetParentID))
+	})
+
+	replyToCommentTool := mcp.NewTool(
+		"confluence_reply_to_comment",
+		mcp.WithDescription("Reply to an existing Confluence comment"),
+		mcp.WithString("parent_comment_id", mcp.Required(), mcp.Description("ID of the comment to reply to")),
+		mcp.WithString("content", mcp.Required(), mcp.Description("Reply body in the given representation")),
+		mcp.WithString("representation", mcp.Description("Body format: 'storage' (default) or 'wiki'")),
+	)
+
+	s.AddTool(replyToCommentTool, func(ctx context.Context, request mcp.CallToolRequest) (*mcp.CallToolResult, error) {
+		parentCommentID, err := request.RequireString("parent_comment_id")
+		if err != nil {
+			return mcp.NewToolResultError(err.Error()), nil
+		}
+		content, err := request.RequireString("content")
+		if err != nil {
+			return mcp.NewToolResultError(err.Error()), nil
+		}
+
+		return jsonResult(client.ReplyToComment(
+			parentCommentID, content,
+			request.GetString("representation", "storage"),
+		))
+	})
 }
