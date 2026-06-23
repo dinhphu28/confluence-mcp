@@ -8,6 +8,7 @@ import (
 
 	"dinhphu28/confluence-mcp/internal/config"
 	"dinhphu28/confluence-mcp/internal/confluence"
+	"dinhphu28/confluence-mcp/internal/jira"
 	"dinhphu28/confluence-mcp/internal/mcpserver"
 	"dinhphu28/confluence-mcp/internal/setup"
 )
@@ -41,7 +42,11 @@ func main() {
 
 	s := mcpserver.New(version)
 	mcpserver.RegisterConfluence(s, client, cfg.Confluence.ReadOnly)
-	// Future: if cfg.Jira.URL != "" { mcpserver.RegisterJira(s, jiraClient, cfg.Jira.ReadOnly) }
+
+	if cfg.JiraEnabled() {
+		jiraClient := jira.NewClient(cfg.Jira.URL, cfg.Jira.PAT)
+		mcpserver.RegisterJira(s, jiraClient, cfg.Jira.ReadOnly)
+	}
 
 	if err := server.ServeStdio(s); err != nil {
 		fmt.Fprintf(os.Stderr, "mcp server error: %v\n", err)

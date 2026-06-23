@@ -20,12 +20,25 @@ type Config struct {
 	// versioning was introduced have 0 and are migrated on next setup.
 	Version    int              `yaml:"config_version"`
 	Confluence ConfluenceConfig `yaml:"confluence"`
+	// Jira is optional; Jira tools are only registered when url and pat are set.
+	Jira JiraConfig `yaml:"jira,omitempty"`
 }
 
 type ConfluenceConfig struct {
 	URL      string `yaml:"url"`
 	PAT      string `yaml:"pat"`
 	ReadOnly bool   `yaml:"read_only"`
+}
+
+type JiraConfig struct {
+	URL      string `yaml:"url"`
+	PAT      string `yaml:"pat"`
+	ReadOnly bool   `yaml:"read_only"`
+}
+
+// JiraEnabled reports whether Jira is configured (both url and pat set).
+func (c *Config) JiraEnabled() bool {
+	return c.Jira.URL != "" && c.Jira.PAT != ""
 }
 
 // Path returns the location of the config file (~/.config/confluence-mcp/config.yaml).
