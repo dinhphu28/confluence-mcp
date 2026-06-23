@@ -291,35 +291,53 @@ func installSelf() error {
 	return writeBinary(targetPath, src)
 }
 
-// writeBinary writes r to target as an executable. It writes to a temp file then
-// atomically renames over the target: a plain truncate-in-place fails with "text
-// file busy" (ETXTBSY) when the existing binary is currently running (e.g. during
-// an upgrade or self-update); rename does not.
+// writeBinary writes r to target as an executable, replacing any existing binary
+// even while it is running. It writes the new binary to a temp file, moves any
+// existing binary aside, then renames the new file into place.
+//
+// The move-aside step is what makes this work cross-platform: a running binary
+// cannot be deleted or renamed *over* on Windows (and truncate-in-place fails
+// with ETXTBSY on Linux), but both platforms allow renaming the locked file to a
+// different name. The old binary is then removed best-effort (on Windows it may
+// stay mapped by the running process until the next run).
 func writeBinary(target string, r io.Reader) error {
 	if err := os.MkdirAll(filepath.Dir(target), 0o755); err != nil {
 		return err
 	}
 
-	tmpPath := target + ".new"
-	dst, err := os.OpenFile(tmpPath, os.O_CREATE|os.O_WRONLY|os.O_TRUNC, 0o755)
+	newPath := target + ".new"
+	dst, err := os.OpenFile(newPath, os.O_CREATE|os.O_WRONLY|os.O_TRUNC, 0o755)
 	if err != nil {
 		return err
 	}
 
 	if _, err := io.Copy(dst, r); err != nil {
 		dst.Close()
-		os.Remove(tmpPath)
+		os.Remove(newPath)
 		return err
 	}
 	if err := dst.Close(); err != nil {
-		os.Remove(tmpPath)
+		os.Remove(newPath)
 		return err
 	}
 
-	if err := os.Rename(tmpPath, target); err != nil {
-		os.Remove(tmpPath)
+	// Move any existing (possibly running/locked) binary aside before putting
+	// the new one in place.
+	oldPath := target + ".old"
+	os.Remove(oldPath) // clear a stale leftover from a previous update
+	if _, err := os.Stat(target); err == nil {
+		if err := os.Rename(target, oldPath); err != nil {
+			os.Remove(newPath)
+			return err
+		}
+	}
+
+	if err := os.Rename(newPath, target); err != nil {
+		os.Rename(oldPath, target) // restore the previous binary on failure
+		os.Remove(newPath)
 		return err
 	}
 
+	os.Remove(oldPath) // best-effort; may still be mapped on Windows
 	return nil
 }
