@@ -11,7 +11,7 @@ import (
 // Register* functions (e.g. RegisterConfluence).
 func New(version string) *server.MCPServer {
 	return server.NewMCPServer(
-		"confluence-mcp",
+		"atlassian-mcp",
 		version,
 		server.WithToolCapabilities(false),
 	)

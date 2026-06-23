@@ -6,7 +6,7 @@ import (
 	"github.com/mark3labs/mcp-go/mcp"
 	"github.com/mark3labs/mcp-go/server"
 
-	"dinhphu28/confluence-mcp/internal/jira"
+	"dinhphu28/atlassian-mcp/internal/jira"
 )
 
 func registerJiraWriteTools(s *server.MCPServer, client *jira.Client) {

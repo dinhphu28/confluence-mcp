@@ -9,7 +9,7 @@ import (
 	"github.com/mark3labs/mcp-go/mcp"
 	"github.com/mark3labs/mcp-go/server"
 
-	"dinhphu28/confluence-mcp/internal/confluence"
+	"dinhphu28/atlassian-mcp/internal/confluence"
 )
 
 func registerConfluenceWriteTools(s *server.MCPServer, client *confluence.Client) {

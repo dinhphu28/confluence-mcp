@@ -1,4 +1,4 @@
-// Package config loads, migrates and persists the confluence-mcp config file.
+// Package config loads, migrates and persists the atlassian-mcp config file.
 package config
 
 import (
@@ -41,13 +41,13 @@ func (c *Config) JiraEnabled() bool {
 	return c.Jira.URL != "" && c.Jira.PAT != ""
 }
 
-// Path returns the location of the config file (~/.config/confluence-mcp/config.yaml).
+// Path returns the location of the config file (~/.config/atlassian-mcp/config.yaml).
 func Path() (string, error) {
 	homeDir, err := os.UserHomeDir()
 	if err != nil {
 		return "", err
 	}
-	return filepath.Join(homeDir, ".config", "confluence-mcp", "config.yaml"), nil
+	return filepath.Join(homeDir, ".config", "atlassian-mcp", "config.yaml"), nil
 }
 
 // Read parses the config file without validating required fields. found is false
@@ -119,12 +119,12 @@ func Load() (*Config, error) {
 	}
 	if !found {
 		path, _ := Path()
-		return nil, fmt.Errorf("config %s not found (run: confluence-mcp setup)", path)
+		return nil, fmt.Errorf("config %s not found (run: atlassian-mcp setup)", path)
 	}
 
 	if cfg.Version > CurrentConfigVersion {
 		return nil, fmt.Errorf(
-			"config version %d is newer than this binary supports (%d); please upgrade confluence-mcp",
+			"config version %d is newer than this binary supports (%d); please upgrade atlassian-mcp",
 			cfg.Version, CurrentConfigVersion)
 	}
 

@@ -6,11 +6,11 @@ import (
 
 	"github.com/mark3labs/mcp-go/server"
 
-	"dinhphu28/confluence-mcp/internal/config"
-	"dinhphu28/confluence-mcp/internal/confluence"
-	"dinhphu28/confluence-mcp/internal/jira"
-	"dinhphu28/confluence-mcp/internal/mcpserver"
-	"dinhphu28/confluence-mcp/internal/setup"
+	"dinhphu28/atlassian-mcp/internal/config"
+	"dinhphu28/atlassian-mcp/internal/confluence"
+	"dinhphu28/atlassian-mcp/internal/jira"
+	"dinhphu28/atlassian-mcp/internal/mcpserver"
+	"dinhphu28/atlassian-mcp/internal/setup"
 )
 
 var version = "dev"
@@ -79,6 +79,6 @@ func productCommand(product string, args []string) error {
 	case "login":
 		return setup.Product(product, setup.ModeLogin)
 	default:
-		return fmt.Errorf("usage: confluence-mcp %s [setup|login]", product)
+		return fmt.Errorf("usage: atlassian-mcp %s [setup|login]", product)
 	}
 }

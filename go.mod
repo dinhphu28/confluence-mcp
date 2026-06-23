@@ -1,4 +1,4 @@
-module dinhphu28/confluence-mcp
+module dinhphu28/atlassian-mcp
 
 go 1.26.2
 

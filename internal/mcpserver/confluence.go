@@ -3,7 +3,7 @@ package mcpserver
 import (
 	"github.com/mark3labs/mcp-go/server"
 
-	"dinhphu28/confluence-mcp/internal/confluence"
+	"dinhphu28/atlassian-mcp/internal/confluence"
 )
 
 // RegisterConfluence registers the Confluence tools on s. Read tools are always

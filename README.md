@@ -1,20 +1,21 @@
-# Confluence MCP
+# Atlassian MCP
 
-A small, zero-dependency MCP server (single Go binary) exposing read-only
-Confluence Server/Data Center tools over stdio.
+A small, zero-dependency MCP server (single Go binary) exposing Confluence and
+Jira (Server/Data Center) tools over stdio. Jira is optional — its tools are
+only registered when configured.
 
 ## Build
 
 Linux:
 
 ```sh
-make release VERSION=0.1.0            # -> dist/confluence-mcp_0.1.0_linux_amd64.tar.gz
+make release VERSION=0.1.0            # -> dist/atlassian-mcp_0.1.0_linux_amd64.tar.gz
 ```
 
 Windows:
 
 ```sh
-make release-windows VERSION=0.1.0    # -> dist/confluence-mcp_0.1.0_windows_amd64.zip
+make release-windows VERSION=0.1.0    # -> dist/atlassian-mcp_0.1.0_windows_amd64.zip
 ```
 
 Both at once:
@@ -28,7 +29,7 @@ built from Linux/mac. `zip` is required for the Windows package.
 
 ## Publish a release
 
-Releases are what `confluence-mcp update` pulls from.
+Releases are what `atlassian-mcp update` pulls from.
 
 **Primary (CI):** push a `vX.Y.Z` tag — the GitHub Actions workflow
 (`.github/workflows/release.yml`) builds all platform archives (linux
@@ -54,26 +55,26 @@ make publish VERSION=0.2.0
 Extract the tarball and run setup:
 
 ```sh
-tar -xzf confluence-mcp_0.1.0_linux_amd64.tar.gz
-cd confluence-mcp_0.1.0_linux_amd64
-./confluence-mcp setup
+tar -xzf atlassian-mcp_0.1.0_linux_amd64.tar.gz
+cd atlassian-mcp_0.1.0_linux_amd64
+./atlassian-mcp setup
 ```
 
-The binary is installed to `~/.local/bin/confluence-mcp` and the config is
-written to `~/.config/confluence-mcp/config.yaml`.
+The binary is installed to `~/.local/bin/atlassian-mcp` and the config is
+written to `~/.config/atlassian-mcp/config.yaml`.
 
 ### Windows
 
 Extract the zip, then open **PowerShell as Administrator** and run setup:
 
 ```powershell
-Expand-Archive confluence-mcp_0.1.0_windows_amd64.zip
-cd confluence-mcp_0.1.0_windows_amd64
-.\confluence-mcp.exe setup
+Expand-Archive atlassian-mcp_0.1.0_windows_amd64.zip
+cd atlassian-mcp_0.1.0_windows_amd64
+.\atlassian-mcp.exe setup
 ```
 
-The binary is installed to `%USERPROFILE%\.local\bin\confluence-mcp.exe` and
-the config is written to `%USERPROFILE%\.config\confluence-mcp\config.yaml`.
+The binary is installed to `%USERPROFILE%\.local\bin\atlassian-mcp.exe` and
+the config is written to `%USERPROFILE%\.config\atlassian-mcp\config.yaml`.
 
 ## Upgrading
 
@@ -82,15 +83,15 @@ the config is written to `%USERPROFILE%\.config\confluence-mcp\config.yaml`.
 Update to the latest GitHub release in place:
 
 ```sh
-./confluence-mcp update          # download & install the latest release
-./confluence-mcp update --check  # only report whether a newer version exists
+./atlassian-mcp update          # download & install the latest release
+./atlassian-mcp update --check  # only report whether a newer version exists
 ```
 
 `update` downloads the release asset for your OS/arch, extracts the binary, and
 atomically replaces the installed one (it works even while the MCP server is
 running — restart/reconnect the server afterwards to use the new version).
 
-Requires releases to be published on [GitHub Releases](https://github.com/dinhphu28/confluence-mcp/releases);
+Requires releases to be published on [GitHub Releases](https://github.com/dinhphu28/atlassian-mcp/releases);
 set `GITHUB_TOKEN` in the environment for a private repo or higher rate limits.
 
 ### Manual upgrade
@@ -98,7 +99,7 @@ set `GITHUB_TOKEN` in the environment for a private repo or higher rate limits.
 Alternatively, extract a release archive and re-run `setup`:
 
 ```sh
-./confluence-mcp setup
+./atlassian-mcp setup
 ```
 
 `setup` is safe to re-run. When a config already exists it **reuses your URLs and
@@ -111,10 +112,10 @@ existing config to version N`, or (first run) `Created new config`.
 Use the per-product commands to (re)configure or refresh tokens:
 
 ```sh
-./confluence-mcp confluence setup   # (re)configure Confluence URL + token
-./confluence-mcp jira setup         # (re)configure Jira URL + token
-./confluence-mcp confluence login   # refresh just the Confluence token (keeps URL)
-./confluence-mcp jira login         # refresh just the Jira token (keeps URL)
+./atlassian-mcp confluence setup   # (re)configure Confluence URL + token
+./atlassian-mcp jira setup         # (re)configure Jira URL + token
+./atlassian-mcp confluence login   # refresh just the Confluence token (keeps URL)
+./atlassian-mcp jira login         # refresh just the Jira token (keeps URL)
 ```
 
 At the prompts, pressing Enter keeps the current value (the existing token is
@@ -146,12 +147,12 @@ confluence:
 "confluence":
   {
     "type": "local",
-    "command": ["/home/<YOUR_HOME>/.local/bin/confluence-mcp"],
+    "command": ["/home/<YOUR_HOME>/.local/bin/atlassian-mcp"],
   }
 ```
 
 On Windows the command path will be the `.exe`, e.g.
-`["C:\\Users\\<you>\\.local\\bin\\confluence-mcp.exe"]`.
+`["C:\\Users\\<you>\\.local\\bin\\atlassian-mcp.exe"]`.
 
 ## Tools
 

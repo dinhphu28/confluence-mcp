@@ -16,7 +16,7 @@ import (
 	"strings"
 )
 
-const githubRepo = "dinhphu28/confluence-mcp"
+const githubRepo = "dinhphu28/atlassian-mcp"
 
 type release struct {
 	TagName string `json:"tag_name"`
@@ -46,7 +46,7 @@ func Update(currentVersion string, checkOnly bool) error {
 	}
 
 	if checkOnly {
-		fmt.Printf("Update available: %s -> %s. Run 'confluence-mcp update' to install.\n", current, latest)
+		fmt.Printf("Update available: %s -> %s. Run 'atlassian-mcp update' to install.\n", current, latest)
 		return nil
 	}
 
@@ -87,7 +87,7 @@ func latestRelease() (*release, error) {
 		return nil, err
 	}
 
-	req.Header.Set("User-Agent", "confluence-mcp")
+	req.Header.Set("User-Agent", "atlassian-mcp")
 	req.Header.Set("Accept", "application/vnd.github+json")
 	if token := os.Getenv("GITHUB_TOKEN"); token != "" {
 		req.Header.Set("Authorization", "Bearer "+token)
@@ -137,7 +137,7 @@ func download(url string) ([]byte, error) {
 	if err != nil {
 		return nil, err
 	}
-	req.Header.Set("User-Agent", "confluence-mcp")
+	req.Header.Set("User-Agent", "atlassian-mcp")
 
 	resp, err := http.DefaultClient.Do(req)
 	if err != nil {
