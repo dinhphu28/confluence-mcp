@@ -66,7 +66,12 @@ release-linux:
 release-windows:
 	$(MAKE) package OS=windows ARCH=amd64
 
-release-all: clean release-linux release-windows
+release-all: clean
+	$(MAKE) package OS=linux   ARCH=amd64
+	$(MAKE) package OS=linux   ARCH=arm64
+	$(MAKE) package OS=windows ARCH=amd64
+	$(MAKE) package OS=darwin  ARCH=amd64
+	$(MAKE) package OS=darwin  ARCH=arm64
 
 # Build both platform archives and publish them as a GitHub release tagged
 # v$(VERSION). Requires the `gh` CLI, authenticated, with the commit pushed.

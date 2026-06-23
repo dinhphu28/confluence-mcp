@@ -28,15 +28,24 @@ built from Linux/mac. `zip` is required for the Windows package.
 
 ## Publish a release
 
-`make publish` builds both archives and creates a GitHub release tagged
-`v$(VERSION)`, which is what `confluence-mcp update` pulls from:
+Releases are what `confluence-mcp update` pulls from.
+
+**Primary (CI):** push a `vX.Y.Z` tag — the GitHub Actions workflow
+(`.github/workflows/release.yml`) builds all platform archives (linux
+amd64/arm64, windows amd64, macOS amd64/arm64) and creates the release with
+auto-generated notes:
+
+```sh
+git tag v0.2.0 && git push origin v0.2.0
+```
+
+**Local/manual alternative:** `make publish` builds the same archives and creates
+the release from your machine (requires the [`gh`](https://cli.github.com) CLI
+authenticated and the commit pushed):
 
 ```sh
 make publish VERSION=0.2.0
 ```
-
-Requires the [`gh`](https://cli.github.com) CLI (authenticated) and the commit
-pushed to the remote.
 
 ## Installation
 
