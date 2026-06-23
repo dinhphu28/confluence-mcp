@@ -19,12 +19,10 @@ func main() {
 	if len(os.Args) > 1 {
 		switch os.Args[1] {
 		case "setup":
-			reconfigure := len(os.Args) > 2 && os.Args[2] == "--reconfigure"
-			if err := setup.Run(reconfigure); err != nil {
-				fmt.Fprintf(os.Stderr, "setup error: %v\n", err)
-				os.Exit(1)
-			}
-			return
+			runCommand(setup.Run())
+
+		case "confluence", "jira":
+			runCommand(productCommand(os.Args[1], os.Args[2:]))
 
 		case "--version":
 			fmt.Println(version)
@@ -51,5 +49,32 @@ func main() {
 	if err := server.ServeStdio(s); err != nil {
 		fmt.Fprintf(os.Stderr, "mcp server error: %v\n", err)
 		os.Exit(1)
+	}
+}
+
+// runCommand reports a CLI subcommand's outcome and exits — subcommands never
+// fall through to starting the MCP server.
+func runCommand(err error) {
+	if err != nil {
+		fmt.Fprintln(os.Stderr, err)
+		os.Exit(1)
+	}
+	os.Exit(0)
+}
+
+// productCommand dispatches `<product> setup|login`.
+func productCommand(product string, args []string) error {
+	sub := ""
+	if len(args) > 0 {
+		sub = args[0]
+	}
+
+	switch sub {
+	case "setup":
+		return setup.Product(product, setup.ModeSetup)
+	case "login":
+		return setup.Product(product, setup.ModeLogin)
+	default:
+		return fmt.Errorf("usage: confluence-mcp %s [setup|login]", product)
 	}
 }
