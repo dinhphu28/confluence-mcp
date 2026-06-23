@@ -1,0 +1,46 @@
+package jira
+
+import (
+	"encoding/json"
+	"fmt"
+	"net/http"
+	"net/url"
+)
+
+// Search runs a JQL query and returns up to limit issues.
+func (c *Client) Search(jql string, limit int) (string, error) {
+	path := fmt.Sprintf("/rest/api/2/search?maxResults=%d&jql=%s", limit, url.QueryEscape(jql))
+	return c.get(path)
+}
+
+// GetIssue returns a single issue by key or ID.
+func (c *Client) GetIssue(key string) (string, error) {
+	return c.get("/rest/api/2/issue/" + url.PathEscape(key))
+}
+
+// GetComments returns the comments on an issue.
+func (c *Client) GetComments(key string) (string, error) {
+	return c.get("/rest/api/2/issue/" + url.PathEscape(key) + "/comment")
+}
+
+// CreateIssue creates an issue in the given project. description is optional and
+// uses Jira wiki markup.
+func (c *Client) CreateIssue(projectKey, issueType, summary, description string) (string, error) {
+	fields := map[string]any{
+		"project":   map[string]any{"key": projectKey},
+		"issuetype": map[string]any{"name": issueType},
+		"summary":   summary,
+	}
+	if description != "" {
+		fields["description"] = description
+	}
+
+	body, _ := json.Marshal(map[string]any{"fields": fields})
+	return c.do(http.MethodPost, "/rest/api/2/issue", string(body))
+}
+
+// AddComment posts a comment (Jira wiki markup) on an issue.
+func (c *Client) AddComment(key, body string) (string, error) {
+	payload, _ := json.Marshal(map[string]any{"body": body})
+	return c.do(http.MethodPost, "/rest/api/2/issue/"+url.PathEscape(key)+"/comment", string(payload))
+}
