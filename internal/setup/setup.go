@@ -12,7 +12,7 @@ import (
 	"runtime"
 	"strings"
 
-	"dinhphu28/confluence-mcp/internal/config"
+	"dinhphu28/atlassian-mcp/internal/config"
 )
 
 const defaultConfluenceURL = "https://confluence.cads.live"
@@ -98,7 +98,7 @@ func Run() error {
 	}
 
 	reader := bufio.NewReader(os.Stdin)
-	fmt.Println("=== Confluence MCP Setup ===")
+	fmt.Println("=== Atlassian MCP Setup ===")
 
 	conf := confluenceProduct(cfg)
 	if *conf.url == "" || *conf.pat == "" {
@@ -239,7 +239,7 @@ func finish(cfg *config.Config, withSnippet bool) error {
 		fmt.Println()
 		fmt.Println("Add this to your opencode config:")
 		fmt.Println()
-		fmt.Println(`"confluence": {`)
+		fmt.Println(`"atlassian": {`)
 		fmt.Println(`  "type": "local",`)
 		fmt.Printf(`  "command": [%q]`+"\n", binPath)
 		fmt.Println(`}`)
@@ -252,9 +252,9 @@ func finish(cfg *config.Config, withSnippet bool) error {
 // binary must carry the .exe extension to be runnable.
 func binaryName() string {
 	if runtime.GOOS == "windows" {
-		return "confluence-mcp.exe"
+		return "atlassian-mcp.exe"
 	}
-	return "confluence-mcp"
+	return "atlassian-mcp"
 }
 
 // installPath returns the full path the binary is installed to.

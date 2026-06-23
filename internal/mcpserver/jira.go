@@ -3,7 +3,7 @@ package mcpserver
 import (
 	"github.com/mark3labs/mcp-go/server"
 
-	"dinhphu28/confluence-mcp/internal/jira"
+	"dinhphu28/atlassian-mcp/internal/jira"
 )
 
 // RegisterJira registers the Jira tools on s. Read tools are always registered;

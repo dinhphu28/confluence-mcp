@@ -1,4 +1,4 @@
-APP_NAME := confluence-mcp
+APP_NAME := atlassian-mcp
 VERSION ?= 0.1.0
 
 OS ?= linux
@@ -22,9 +22,9 @@ ARCHIVE := $(DIST_DIR)/$(PACKAGE_NAME).$(ARCHIVE_EXT)
 
 # Platform-specific install hint shipped as README.txt inside the package.
 ifeq ($(OS),windows)
-README_TXT := Confluence MCP (Windows)\n\nOpen PowerShell as Administrator, then run:\n\n  .\\$(BIN_NAME) setup\n
+README_TXT := Atlassian MCP (Windows)\n\nOpen PowerShell as Administrator, then run:\n\n  .\\$(BIN_NAME) setup\n
 else
-README_TXT := Confluence MCP\n\nRun setup:\n\n  ./$(BIN_NAME) setup\n
+README_TXT := Atlassian MCP\n\nRun setup:\n\n  ./$(BIN_NAME) setup\n
 endif
 
 .PHONY: build package release release-linux release-windows release-all publish clean
