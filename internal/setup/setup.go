@@ -282,26 +282,31 @@ func installSelf() error {
 		return nil
 	}
 
-	if err := os.MkdirAll(filepath.Dir(targetPath), 0o755); err != nil {
-		return err
-	}
-
 	src, err := os.Open(exePath)
 	if err != nil {
 		return err
 	}
 	defer src.Close()
 
-	// Write to a temp file then atomically rename over the target. A plain
-	// truncate-in-place fails with "text file busy" (ETXTBSY) when the existing
-	// binary is currently running, e.g. during an upgrade; rename does not.
-	tmpPath := targetPath + ".new"
+	return writeBinary(targetPath, src)
+}
+
+// writeBinary writes r to target as an executable. It writes to a temp file then
+// atomically renames over the target: a plain truncate-in-place fails with "text
+// file busy" (ETXTBSY) when the existing binary is currently running (e.g. during
+// an upgrade or self-update); rename does not.
+func writeBinary(target string, r io.Reader) error {
+	if err := os.MkdirAll(filepath.Dir(target), 0o755); err != nil {
+		return err
+	}
+
+	tmpPath := target + ".new"
 	dst, err := os.OpenFile(tmpPath, os.O_CREATE|os.O_WRONLY|os.O_TRUNC, 0o755)
 	if err != nil {
 		return err
 	}
 
-	if _, err := io.Copy(dst, src); err != nil {
+	if _, err := io.Copy(dst, r); err != nil {
 		dst.Close()
 		os.Remove(tmpPath)
 		return err
@@ -311,7 +316,7 @@ func installSelf() error {
 		return err
 	}
 
-	if err := os.Rename(tmpPath, targetPath); err != nil {
+	if err := os.Rename(tmpPath, target); err != nil {
 		os.Remove(tmpPath)
 		return err
 	}
