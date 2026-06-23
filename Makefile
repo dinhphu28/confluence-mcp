@@ -27,7 +27,7 @@ else
 README_TXT := Confluence MCP\n\nRun setup:\n\n  ./$(BIN_NAME) setup\n
 endif
 
-.PHONY: build package release release-linux release-windows release-all clean
+.PHONY: build package release release-linux release-windows release-all publish clean
 
 build:
 	mkdir -p $(BUILD_DIR)/$(OS)_$(ARCH)
@@ -67,6 +67,16 @@ release-windows:
 	$(MAKE) package OS=windows ARCH=amd64
 
 release-all: clean release-linux release-windows
+
+# Build both platform archives and publish them as a GitHub release tagged
+# v$(VERSION). Requires the `gh` CLI, authenticated, with the commit pushed.
+publish: release-all
+	@command -v gh >/dev/null || { echo "gh CLI not found; install from https://cli.github.com"; exit 1; }
+	gh release create v$(VERSION) \
+		$(DIST_DIR)/$(APP_NAME)_$(VERSION)_*.tar.gz \
+		$(DIST_DIR)/$(APP_NAME)_$(VERSION)_*.zip \
+		--title "v$(VERSION)" \
+		--generate-notes
 
 clean:
 	rm -rf $(BUILD_DIR)

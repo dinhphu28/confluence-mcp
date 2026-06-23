@@ -26,6 +26,18 @@ make release-all VERSION=0.1.0
 Cross-compiling is pure Go (`CGO_ENABLED=0`), so the Windows binary can be
 built from Linux/mac. `zip` is required for the Windows package.
 
+## Publish a release
+
+`make publish` builds both archives and creates a GitHub release tagged
+`v$(VERSION)`, which is what `confluence-mcp update` pulls from:
+
+```sh
+make publish VERSION=0.2.0
+```
+
+Requires the [`gh`](https://cli.github.com) CLI (authenticated) and the commit
+pushed to the remote.
+
 ## Installation
 
 ### Linux / macOS
@@ -56,25 +68,44 @@ the config is written to `%USERPROFILE%\.config\confluence-mcp\config.yaml`.
 
 ## Upgrading
 
-To upgrade, extract the new release and run `setup` again:
+### Self-update
+
+Update to the latest GitHub release in place:
+
+```sh
+./confluence-mcp update          # download & install the latest release
+./confluence-mcp update --check  # only report whether a newer version exists
+```
+
+`update` downloads the release asset for your OS/arch, extracts the binary, and
+atomically replaces the installed one (it works even while the MCP server is
+running — restart/reconnect the server afterwards to use the new version).
+
+Requires releases to be published on [GitHub Releases](https://github.com/dinhphu28/confluence-mcp/releases);
+set `GITHUB_TOKEN` in the environment for a private repo or higher rate limits.
+
+### Manual upgrade
+
+Alternatively, extract a release archive and re-run `setup`:
 
 ```sh
 ./confluence-mcp setup
 ```
 
-`setup` is safe to re-run. When a config already exists it **reuses your URL and
-token** — it does not re-ask — and only:
+`setup` is safe to re-run. When a config already exists it **reuses your URLs and
+tokens** — it does not re-ask — and only reinstalls the binary and migrates the
+config schema if needed. You'll see one of `Reused existing config`, `Migrated
+existing config to version N`, or (first run) `Created new config`.
 
-- reinstalls the binary, and
-- migrates the config to the current schema if needed.
+### Changing credentials
 
-You'll see one of `Reused existing config`, `Migrated existing config to
-version N`, or (first run) `Created new config`.
-
-To deliberately change the URL or token, force the prompts:
+Use the per-product commands to (re)configure or refresh tokens:
 
 ```sh
-./confluence-mcp setup --reconfigure
+./confluence-mcp confluence setup   # (re)configure Confluence URL + token
+./confluence-mcp jira setup         # (re)configure Jira URL + token
+./confluence-mcp confluence login   # refresh just the Confluence token (keeps URL)
+./confluence-mcp jira login         # refresh just the Jira token (keeps URL)
 ```
 
 At the prompts, pressing Enter keeps the current value (the existing token is

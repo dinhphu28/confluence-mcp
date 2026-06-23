@@ -24,6 +24,10 @@ func main() {
 		case "confluence", "jira":
 			runCommand(productCommand(os.Args[1], os.Args[2:]))
 
+		case "update":
+			checkOnly := len(os.Args) > 2 && os.Args[2] == "--check"
+			runCommand(setup.Update(version, checkOnly))
+
 		case "--version":
 			fmt.Println(version)
 			return
